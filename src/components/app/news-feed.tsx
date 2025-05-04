@@ -49,6 +49,10 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     });
   };
 
+  // Define a consistent height for the content area cards
+  // Subtract header height (h-16) and padding/margins (adjust as needed, e.g., p-4/p-6)
+  const contentAreaHeight = 'calc(100vh - 4rem - 4rem)'; // Example: 100vh - header height - vertical padding
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Article List */}
@@ -58,8 +62,9 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
           <CardDescription>Select an article to generate a script.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Adjusted height for article list */}
-          <ScrollArea className="h-[calc(70vh-theme(spacing.16))] pr-4">
+          {/* Adjust height using the calculated variable */}
+          {/* Subtract CardHeader height estimate (e.g., 6rem) */}
+          <ScrollArea className="pr-4" style={{ height: `calc(${contentAreaHeight} - 6rem)` }}>
             <div className="space-y-4">
               {initialNews.map((article, index) => (
                 <Button
@@ -90,14 +95,15 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
             </Button>
           )}
         </CardHeader>
-        {/* Adjusted height for content/avatar area */}
-        <CardContent className="h-[calc(70vh-theme(spacing.16))] flex flex-col p-4 md:p-6">
+        {/* Adjust height using the calculated variable */}
+         {/* Subtract CardHeader height estimate (e.g., 6rem for title + button) */}
+        <CardContent className="flex flex-col p-4 md:p-6" style={{ height: `calc(${contentAreaHeight} - 6rem)` }}>
           {isGenerating && (
-            <div className="space-y-4 p-0 flex flex-col flex-grow">
-               {/* Skeleton for the avatar display area */}
-               <Skeleton className="aspect-video w-full rounded-t-lg flex-grow" />
-               {/* Skeleton for the controls area */}
-               <div className="p-4 space-y-3 border-t bg-background rounded-b-lg">
+             <div className="space-y-4 p-0 flex flex-col flex-grow items-center justify-center"> {/* Center skeleton */}
+               {/* Skeleton matching the fixed avatar size */}
+               <Skeleton className="w-[300px] h-[300px] rounded-lg" />
+               {/* Skeleton for the controls area - adjust width */}
+               <div className="p-4 space-y-3 w-full max-w-[300px] mt-4 bg-background rounded-b-lg border-t">
                  <Skeleton className="h-2 w-full" /> {/* Progress bar */}
                  <div className="flex justify-between">
                    <div className="flex gap-2">
@@ -135,3 +141,4 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     </div>
   );
 }
+

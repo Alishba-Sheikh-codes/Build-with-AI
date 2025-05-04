@@ -21,15 +21,16 @@ interface StaticAvatarSvgProps {
 
 // Static SVG Placeholder Avatar - Now accepts props for animation
 const StaticAvatarSvg = ({ isSpeaking, mouthOpen }: StaticAvatarSvgProps) => {
-    // Define mouth paths
-    const closedMouthPath = "M 70 180 Q 100 210 130 180"; // Smiley curve
-    const slightlyOpenMouthPath = "M 70 180 Q 100 195 130 180"; // Less curved
-    const openMouthPath = "M 65 185 C 70 205, 130 205, 135 185 Z"; // Ovalish shape
+    // Define mouth paths adjusted for 300x300 viewBox
+    const closedMouthPath = "M 105 210 Q 150 240 195 210"; // Smiley curve
+    const slightlyOpenMouthPath = "M 105 210 Q 150 225 195 210"; // Less curved
+    const openMouthPath = "M 98 215 C 105 235, 195 235, 202 215 Z"; // Ovalish shape
+
 
     let mouthPath = closedMouthPath;
     let mouthFill = "none";
     let mouthStroke = "hsl(var(--foreground))";
-    let mouthStrokeWidth = "4";
+    let mouthStrokeWidth = "5"; // Slightly thicker stroke for larger size
 
 
     if (isSpeaking) {
@@ -47,20 +48,21 @@ const StaticAvatarSvg = ({ isSpeaking, mouthOpen }: StaticAvatarSvgProps) => {
 
     return (
         <svg
-            viewBox="0 0 200 300"
+            viewBox="0 0 300 300" // Updated viewBox to 300x300
             xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full object-contain p-4 text-foreground" // Adjusted padding
+            className="w-full h-full object-contain p-4 text-foreground" // Adjusted padding might be needed
             data-ai-hint="smiley face cartoon avatar illustration"
             aria-label="Smiley Face Avatar Placeholder"
         >
             {/* Head Outline - Round */}
-            <circle cx="100" cy="150" r="90" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+             {/* Centered in 300x300, radius scaled */}
+            <circle cx="150" cy="150" r="135" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="3"/>
 
-            {/* Eyes - Simple Dots */}
-            <circle cx="75" cy="130" r="10" fill="hsl(var(--foreground))" />
-            <circle cx="125" cy="130" r="10" fill="hsl(var(--foreground))" />
+            {/* Eyes - Simple Dots - Coordinates and radius scaled */}
+            <circle cx="115" cy="130" r="15" fill="hsl(var(--foreground))" />
+            <circle cx="185" cy="130" r="15" fill="hsl(var(--foreground))" />
 
-             {/* Mouth - Animated */}
+             {/* Mouth - Animated - Using scaled paths */}
             <path d={mouthPath} stroke={mouthStroke} strokeWidth={mouthStrokeWidth} fill={mouthFill} strokeLinecap="round" />
 
         </svg>
@@ -317,9 +319,11 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
     <Card className="overflow-hidden border-0 shadow-none flex flex-col h-full">
       <CardContent className="p-0 flex flex-col flex-grow min-h-0"> {/* flex-grow allows content to fill space */}
          {/* Avatar Area - Takes remaining space */}
-         <div className="flex-grow relative bg-muted/30 rounded-t-lg min-h-0"> {/* min-h-0 is important for flex children */}
-            {/* MockAvatar showing animated SVG */}
-            <MockAvatar ref={avatarRef} isSpeaking={isPlaying} />
+         <div className="flex-grow relative bg-muted/30 rounded-t-lg min-h-0 flex items-center justify-center"> {/* Added flex centering */}
+            {/* MockAvatar showing animated SVG - Constrained size */}
+             <div className="w-[300px] h-[300px]"> {/* Container to set explicit size */}
+                 <MockAvatar ref={avatarRef} isSpeaking={isPlaying} />
+             </div>
          </div>
 
         {/* Progress Bar & Controls Wrapper - Fixed at the bottom */}
