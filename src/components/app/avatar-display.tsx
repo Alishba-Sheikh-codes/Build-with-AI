@@ -22,23 +22,23 @@ const StaticAvatarSvg = () => (
         data-ai-hint="cartoon avatar human features face illustration"
         aria-label="Cartoon Avatar Placeholder"
     >
-        {/* Head Outline */}
-        <path d="M 100, 10 C 50, 10 10, 50 10, 100 C 10, 180 40, 290 100, 290 C 160, 290 190, 180 190, 100 C 190, 50 150, 10 100, 10 Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+        {/* Head Outline - Made smaller and rounder */}
+        <path d="M 100, 60 C 40, 60 20, 100 20, 150 C 20, 200 40, 240 100, 240 C 160, 240 180, 200 180, 150 C 180, 100 160, 60 100, 60 Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
 
-        {/* Eyes */}
-        <circle cx="70" cy="120" r="15" fill="hsl(var(--background))" />
-        <circle cx="70" cy="120" r="7" fill="hsl(var(--foreground))" />
-        <circle cx="130" cy="120" r="15" fill="hsl(var(--background))" />
-        <circle cx="130" cy="120" r="7" fill="hsl(var(--foreground))" />
+        {/* Eyes - Adjusted position */}
+        <circle cx="70" cy="140" r="12" fill="hsl(var(--background))" />
+        <circle cx="70" cy="140" r="6" fill="hsl(var(--foreground))" />
+        <circle cx="130" cy="140" r="12" fill="hsl(var(--background))" />
+        <circle cx="130" cy="140" r="6" fill="hsl(var(--foreground))" />
 
-        {/* Simple Nose */}
-        <path d="M 100, 140 Q 105, 155 100, 170 Q 95, 155 100, 140 Z" fill="hsl(var(--foreground))" opacity="0.6"/>
+        {/* Simple Nose - Adjusted position */}
+        <path d="M 100, 165 Q 105, 175 100, 185 Q 95, 175 100, 165 Z" fill="hsl(var(--foreground))" opacity="0.6"/>
 
-        {/* Mouth Placeholder - Static */}
+        {/* Mouth Placeholder - Static (kept commented out) */}
         {/* <path d="M 80, 200 Q 100, 220 120, 200" stroke="hsl(var(--foreground))" strokeWidth="3" fill="none" /> */}
 
-        {/* Hair Placeholder (Simple) */}
-        <path d="M 30, 80 Q 50, 40 100, 30 Q 150, 40 170, 80 C 160, 60 140, 50 100, 50 C 60, 50 40, 60 30, 80 Z" fill="hsl(var(--primary))" opacity="0.8" />
+        {/* Hair Placeholder (Simple) - Adjusted position */}
+        <path d="M 30, 130 Q 50, 90 100, 80 Q 150, 90 170, 130 C 160, 110 140, 100 100, 100 C 60, 100 40, 110 30, 130 Z" fill="hsl(var(--primary))" opacity="0.8" />
 
     </svg>
 );
@@ -69,9 +69,9 @@ const MockAvatar = React.forwardRef<HTMLDivElement, { isSpeaking: boolean }>(({ 
         <div ref={ref} className="relative w-full h-full flex items-center justify-center bg-secondary/30 rounded-md overflow-hidden">
              {/* Static SVG Avatar */}
              <StaticAvatarSvg />
-            {/* Simple mouth simulation - overlaying the SVG */}
+            {/* Simple mouth simulation - overlaying the SVG, adjusted position */}
             <div
-                className={`absolute bottom-[25%] left-1/2 transform -translate-x-1/2 w-10 h-1 bg-destructive rounded transition-all duration-100 ${mouthOpen ? 'h-5 scale-y-110' : 'h-1 scale-y-100'}`} // Adjusted position and animation
+                className={`absolute bottom-[35%] left-1/2 transform -translate-x-1/2 w-8 h-1 bg-destructive rounded transition-all duration-100 ${mouthOpen ? 'h-4 scale-y-110' : 'h-1 scale-y-100'}`} // Adjusted bottom position, width, and height
                 style={{ transformOrigin: 'center bottom' }}
             ></div>
         </div>
@@ -342,5 +342,3 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
     </Card>
   );
 }
-
-    
