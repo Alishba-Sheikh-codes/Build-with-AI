@@ -320,16 +320,16 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
     <Card className="overflow-hidden border-0 shadow-none flex flex-col h-full">
       {/* Make CardContent the primary flex container */}
       <CardContent className="p-0 flex flex-col flex-grow min-h-0">
-         {/* Avatar Area - Takes remaining space */}
-         <div className="flex-grow relative bg-muted/30 rounded-t-lg min-h-0 flex items-center justify-center"> {/* Added flex centering */}
+         {/* Avatar Area - Takes remaining space, allows scrolling if avatar overflows */}
+         <div className="flex-grow relative bg-muted/30 rounded-t-lg min-h-0 flex items-center justify-center overflow-y-auto"> {/* Added overflow-y-auto and min-h-0 */}
             {/* MockAvatar showing animated SVG - Constrained size */}
-             <div className="w-[300px] h-[300px]"> {/* Container to set explicit size */}
+             <div className="w-[300px] h-[300px] flex-shrink-0"> {/* Container to set explicit size and prevent shrinking */}
                  <MockAvatar ref={avatarRef} isSpeaking={isPlaying} />
              </div>
          </div>
 
         {/* Progress Bar & Controls Wrapper - Fixed at the bottom of CardContent */}
-        <div className="p-4 rounded-b-lg bg-background border-t"> {/* Added border-t */}
+        <div className="p-4 rounded-b-lg bg-background border-t flex-shrink-0"> {/* Added flex-shrink-0 */}
            {/* Progress Bar */}
            <Progress value={progress} className="w-full h-2 mb-4" aria-label="Playback progress"/>
 

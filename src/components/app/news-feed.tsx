@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { NewsArticle } from '@/services/news';
@@ -49,22 +50,20 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     });
   };
 
-  // Define a consistent height for the content area cards
-  // Subtract header height (h-16) and padding/margins (adjust as needed, e.g., p-4/p-6)
-  const contentAreaHeight = 'calc(100vh - 4rem - 4rem)'; // Example: 100vh - header height - vertical padding
+  // Removed the contentAreaHeight calculation as explicit heights are less reliable with flexbox and potential overflow
 
   return (
+    // Use min-h-screen on the outer div or adjust layout to ensure full viewport height if needed
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Article List */}
-      <Card className="lg:col-span-1">
-        <CardHeader>
+      <Card className="lg:col-span-1 flex flex-col"> {/* Added flex flex-col */}
+        <CardHeader className="flex-shrink-0"> {/* Prevent header from shrinking */}
           <CardTitle>Latest News</CardTitle>
           <CardDescription>Select an article to generate a script.</CardDescription>
         </CardHeader>
-        <CardContent>
-          {/* Adjust height using the calculated variable */}
-          {/* Subtract CardHeader height estimate (e.g., 6rem) */}
-          <ScrollArea className="pr-4" style={{ height: `calc(${contentAreaHeight} - 6rem)` }}>
+        <CardContent className="flex-grow overflow-hidden p-0"> {/* Allow content to grow and handle overflow */}
+          {/* Use flex-grow on ScrollArea or its parent to fill space */}
+          <ScrollArea className="h-full p-4 pr-6"> {/* Adjust padding as needed, ensure h-full */}
             <div className="space-y-4">
               {initialNews.map((article, index) => (
                 <Button
@@ -82,8 +81,8 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
       </Card>
 
       {/* Article Content & Avatar Display */}
-      <Card className="lg:col-span-2">
-        <CardHeader>
+      <Card className="lg:col-span-2 flex flex-col"> {/* Added flex flex-col */}
+        <CardHeader className="flex-shrink-0"> {/* Prevent header from shrinking */}
           <CardTitle>{selectedArticle ? selectedArticle.headline : "Select an Article"}</CardTitle>
           {selectedArticle && (
             <Button
@@ -95,15 +94,14 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
             </Button>
           )}
         </CardHeader>
-        {/* Adjust height using the calculated variable */}
-         {/* Subtract CardHeader height estimate (e.g., 6rem for title + button) */}
-        <CardContent className="flex flex-col p-4 md:p-6" style={{ height: `calc(${contentAreaHeight} - 6rem)` }}>
+         {/* Let CardContent grow to fill available space */}
+        <CardContent className="flex flex-col flex-grow p-4 md:p-6 overflow-hidden min-h-0"> {/* Added overflow-hidden and min-h-0 */}
           {isGenerating && (
-             <div className="space-y-4 p-0 flex flex-col flex-grow items-center justify-center"> {/* Center skeleton */}
+             <div className="space-y-4 p-0 flex flex-col flex-grow items-center justify-center min-h-0"> {/* Center skeleton, ensure min-h-0 */}
                {/* Skeleton matching the fixed avatar size */}
-               <Skeleton className="w-[300px] h-[300px] rounded-lg" />
+               <Skeleton className="w-[300px] h-[300px] rounded-lg flex-shrink-0" /> {/* Prevent shrinking */}
                {/* Skeleton for the controls area - adjust width */}
-               <div className="p-4 space-y-3 w-full max-w-[300px] mt-4 bg-background rounded-b-lg border-t">
+               <div className="p-4 space-y-3 w-full max-w-[300px] mt-4 bg-background rounded-b-lg border-t flex-shrink-0"> {/* Prevent shrinking */}
                  <Skeleton className="h-2 w-full" /> {/* Progress bar */}
                  <div className="flex justify-between">
                    <div className="flex gap-2">
@@ -119,18 +117,18 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
             </div>
           )}
           {!isGenerating && generatedScript && selectedArticle && (
-            // AvatarDisplay manages its own height and layout
+            // AvatarDisplay now manages its own height and layout within the flex container
             <AvatarDisplay script={generatedScript} />
           )}
           {!isGenerating && !generatedScript && selectedArticle && (
              // ScrollArea takes available space
-            <ScrollArea className="flex-grow pr-4 border rounded-md p-4">
+            <ScrollArea className="flex-grow pr-4 border rounded-md p-4 min-h-0"> {/* Ensure min-h-0 */}
               <p className="text-muted-foreground whitespace-pre-line">{selectedArticle.content}</p>
             </ScrollArea>
           )}
           {!selectedArticle && !isGenerating && (
             // Placeholder takes available space
-            <div className="flex flex-grow items-center justify-center text-muted-foreground border rounded-md">
+            <div className="flex flex-grow items-center justify-center text-muted-foreground border rounded-md min-h-0"> {/* Ensure min-h-0 */}
               <p className="text-center p-4">Select an article from the list to view its content and generate a presentation.</p>
             </div>
           )}
