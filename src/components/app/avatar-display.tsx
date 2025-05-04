@@ -20,33 +20,36 @@ const MockAvatar = React.forwardRef<HTMLDivElement, { isSpeaking: boolean }>(({ 
     useEffect(() => {
         let intervalId: NodeJS.Timeout | null = null;
         if (isSpeaking) {
+            // Start mouth animation only if speaking
             intervalId = setInterval(() => {
                 setMouthOpen(prev => !prev);
             }, 200); // Simulate mouth movement speed
         } else {
+             // Ensure mouth is closed when not speaking
             setMouthOpen(false);
         }
+        // Cleanup function to clear interval when component unmounts or isSpeaking changes
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [isSpeaking]);
+    }, [isSpeaking]); // Dependency array includes isSpeaking
 
     return (
         <div ref={ref} className="relative w-full h-full flex items-center justify-center bg-secondary/50 rounded-md overflow-hidden">
-            {/* Placeholder for Avatar Image/Model */}
+            {/* Consistent Placeholder Avatar Image */}
              <Image
-                src={`https://picsum.photos/seed/${encodeURIComponent('cartoon avatar human')}/400/600`}
-                alt="Cartoon Avatar"
+                src={`https://picsum.photos/seed/${encodeURIComponent('cartoon avatar human features')}/400/600`} // More specific seed
+                alt="Cartoon Avatar Placeholder"
                 width={400}
                 height={600}
                 className="object-contain h-full"
                 priority // Load avatar image faster
-                data-ai-hint="cartoon avatar human features" // Updated hint
+                data-ai-hint="cartoon avatar human features face illustration" // Updated hint for better search
             />
             {/* Simple mouth simulation */}
             <div
-                className={`absolute bottom-[30%] left-1/2 transform -translate-x-1/2 w-8 h-1 bg-destructive rounded transition-all duration-100 ${mouthOpen ? 'h-3' : 'h-1'}`} // Adjusted mouth size slightly
-                style={{ backgroundColor: 'var(--foreground)'}}
+                className={`absolute bottom-[30%] left-1/2 transform -translate-x-1/2 w-8 h-1 bg-foreground rounded transition-all duration-100 ${mouthOpen ? 'h-3 scale-y-125' : 'h-1 scale-y-100'}`} // Adjusted mouth animation slightly
+                style={{ transformOrigin: 'center bottom' }} // Ensure scaling originates from the bottom center
             ></div>
         </div>
     );
@@ -59,7 +62,7 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.7); // Default volume 70%
   const [progress, setProgress] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null); // Keep if planning audio element integration
   const avatarRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -76,30 +79,43 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
 
      // Cancel any ongoing speech before creating a new utterance
     window.speechSynthesis.cancel();
-    cancelAnimationFrame(animationFrameRef.current!);
+    if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+    }
     setIsPlaying(false);
     setProgress(0);
+    startTimeRef.current = 0; // Reset start time
 
     const newUtterance = new SpeechSynthesisUtterance(script);
     newUtterance.volume = isMuted ? 0 : volume;
-    newUtterance.rate = 1;
-    newUtterance.pitch = 1;
+    newUtterance.rate = 1; // Adjust rate if needed
+    newUtterance.pitch = 1; // Adjust pitch if needed
 
-    estimatedDurationRef.current = (script.split(' ').length / 180) * 60 * 1000; // Estimate duration
+    // Estimate duration based on average speaking rate (words per minute)
+    // Adjust WPM (e.g., 150-180) based on observed synthesis speed
+    const wordsPerMinute = 160;
+    estimatedDurationRef.current = (script.split(/\s+/).length / wordsPerMinute) * 60 * 1000; // Duration in milliseconds
 
     const updateProgress = () => {
-      if (isPlaying && startTimeRef.current > 0 && estimatedDurationRef.current > 0) {
+        // Check if speech is active before updating progress
+      if (window.speechSynthesis.speaking && isPlaying && startTimeRef.current > 0 && estimatedDurationRef.current > 0) {
         const elapsedTime = Date.now() - startTimeRef.current;
         const currentProgress = Math.min((elapsedTime / estimatedDurationRef.current) * 100, 100);
         setProgress(currentProgress);
+        // Continue animation frame loop only if progress < 100
         if (currentProgress < 100) {
           animationFrameRef.current = requestAnimationFrame(updateProgress);
         } else {
+           // Ensure cleanup when progress reaches 100 naturally
           setIsPlaying(false);
           setProgress(100);
+          startTimeRef.current = 0;
         }
       } else {
-         cancelAnimationFrame(animationFrameRef.current!);
+           // If no longer speaking but loop is running, cancel it
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+          }
       }
     };
 
@@ -107,121 +123,148 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
         startTimeRef.current = Date.now();
         setIsPlaying(true);
         setProgress(0); // Reset progress on new start
-        cancelAnimationFrame(animationFrameRef.current!); // Clear any previous frame
-        animationFrameRef.current = requestAnimationFrame(updateProgress);
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current); // Clear any previous frame
+        }
+        animationFrameRef.current = requestAnimationFrame(updateProgress); // Start progress updates
     };
 
     newUtterance.onresume = () => {
         // Recalculate start time based on current progress to resume timing correctly
         const elapsedEstimate = (progress / 100) * estimatedDurationRef.current;
         startTimeRef.current = Date.now() - elapsedEstimate;
-        setIsPlaying(true);
-         cancelAnimationFrame(animationFrameRef.current!);
-        animationFrameRef.current = requestAnimationFrame(updateProgress);
+        setIsPlaying(true); // Ensure state is playing
+         if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current); // Clear any lingering frame
+         }
+        animationFrameRef.current = requestAnimationFrame(updateProgress); // Restart progress updates
     };
 
     newUtterance.onpause = () => {
-      setIsPlaying(false);
-      cancelAnimationFrame(animationFrameRef.current!);
+      setIsPlaying(false); // Update state
+       if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current); // Stop progress updates
+       }
     };
 
     newUtterance.onend = () => {
       setIsPlaying(false);
-      setProgress(100);
-      startTimeRef.current = 0;
-      cancelAnimationFrame(animationFrameRef.current!);
+      setProgress(100); // Ensure progress shows 100%
+      startTimeRef.current = 0; // Reset start time
+       if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current); // Stop progress updates
+       }
     };
 
     newUtterance.onerror = (event) => {
       console.error("Speech synthesis error:", event.error);
       setIsPlaying(false);
-      setProgress(0);
+      setProgress(0); // Reset progress on error
       startTimeRef.current = 0;
-      cancelAnimationFrame(animationFrameRef.current!);
+       if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current); // Stop progress updates
+       }
     };
 
     utteranceRef.current = newUtterance;
 
-    // Cleanup function
+    // Cleanup function for when the component unmounts or script changes
     return () => {
-      window.speechSynthesis.cancel();
-      cancelAnimationFrame(animationFrameRef.current!);
+      if(window.speechSynthesis) {
+         window.speechSynthesis.cancel(); // Stop any speech synthesis
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current); // Clean up animation frame
+      }
       utteranceRef.current = null; // Clear ref on cleanup or script change
       setIsPlaying(false);
       setProgress(0);
       startTimeRef.current = 0;
     };
 
-  }, [script]); // Only re-run when script changes
+  }, [script]); // Re-run effect only when the script changes
 
-   // Update volume/mute effect
+   // Effect to update utterance volume when volume or isMuted state changes
     useEffect(() => {
         if (utteranceRef.current) {
             utteranceRef.current.volume = isMuted ? 0 : volume;
         }
-        // Note: No need to pause/resume here usually, volume changes should apply if supported
+        // Note: This doesn't need to pause/resume speech. Volume changes apply dynamically if supported.
     }, [volume, isMuted]);
 
 
   const handlePlayPause = () => {
-    if (!window.speechSynthesis || !utteranceRef.current) return;
+    if (typeof window === 'undefined' || !window.speechSynthesis || !utteranceRef.current) return;
     const synth = window.speechSynthesis;
 
     if (synth.speaking) {
       if (isPlaying) { // Was playing, now pause
         synth.pause();
-      } else { // Was paused, now resume
+        // isPlaying state is set by onpause handler
+      } else { // Was paused (but synth.speaking is true), now resume
         synth.resume();
+         // isPlaying state is set by onresume handler
       }
-    } else if (progress < 100) { // Not speaking, start from beginning or resume if paused near end
-        // Restart if not speaking or after error/cancel/end
-        synth.cancel(); // Ensure clean state if previously ended or errored
-        setProgress(0); // Reset progress for a fresh start
-        utteranceRef.current.volume = isMuted ? 0 : volume; // Re-apply volume
+    } else if (progress < 100 && utteranceRef.current) { // Not speaking, start from beginning
+        synth.cancel(); // Ensure clean state if previously ended, errored, or cancelled
+        // Apply current volume/mute setting before speaking
+        utteranceRef.current.volume = isMuted ? 0 : volume;
+        setProgress(0); // Reset progress visually for a fresh start
         synth.speak(utteranceRef.current);
-    } else {
-        // If progress is 100, effectively rewind and play
+         // isPlaying state is set by onstart handler
+    } else if (progress >= 100) { // If progress is 100 or more, treat as rewind and play
         handleRewind(true); // Rewind and auto-play
     }
   };
 
 
   const handleRewind = (autoPlay = false) => {
-     if (!window.speechSynthesis || !utteranceRef.current) return;
-    window.speechSynthesis.cancel(); // Stop current speech
+     if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel(); // Stop current speech immediately
+
+    // Reset state
     setProgress(0);
     setIsPlaying(false);
     startTimeRef.current = 0;
-    cancelAnimationFrame(animationFrameRef.current!);
+     if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current); // Stop progress updates
+     }
 
-    if (autoPlay) {
-      // Use a small delay to ensure cancel completes before speak
+
+    if (autoPlay && utteranceRef.current) {
+      // Use a small delay to ensure cancel completes before speak, especially on some browsers
       setTimeout(() => {
          if (utteranceRef.current) {
-            utteranceRef.current.volume = isMuted ? 0 : volume; // Re-apply volume
+            // Re-apply current volume/mute setting before speaking
+            utteranceRef.current.volume = isMuted ? 0 : volume;
             window.speechSynthesis.speak(utteranceRef.current);
+             // isPlaying state will be set by the utterance's onstart handler
          }
-      }, 50);
+      }, 50); // 50ms delay might be adjusted
     }
   };
 
   const handleVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setVolume(newVolume);
+    // Automatically unmute if volume is turned up from 0, or mute if set to 0
     if (newVolume > 0 && isMuted) {
       setIsMuted(false);
     } else if (newVolume === 0 && !isMuted) {
       setIsMuted(true);
     }
+    // The useEffect for [volume, isMuted] will handle updating the utterance
   };
 
   const toggleMute = () => {
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
-     // If unmuting and volume was 0, set a default volume
+     // If unmuting and volume was previously 0, set a default volume (e.g., 0.7)
+     // This prevents staying silent if unmuted when volume slider is at 0.
      if (!newMutedState && volume === 0) {
-        setVolume(0.7); // Set volume state directly, effect will handle utterance
+        setVolume(0.7); // Adjust volume state, the effect will update the utterance
      }
+      // The useEffect for [volume, isMuted] will handle updating the utterance
   };
 
 
@@ -230,47 +273,48 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
       <CardContent className="p-0 aspect-video relative flex flex-col">
          {/* Avatar Area */}
          <div className="flex-grow relative bg-muted/30 rounded-t-lg">
-            {/* Replace MockAvatar with your actual avatar component */}
+            {/* MockAvatar showing placeholder */}
             <MockAvatar ref={avatarRef} isSpeaking={isPlaying} />
          </div>
 
         {/* Progress Bar & Controls Wrapper */}
-        <div className="p-4 rounded-b-lg bg-background">
+        <div className="p-4 rounded-b-lg bg-background border-t"> {/* Added border-t */}
            {/* Progress Bar */}
            <Progress value={progress} className="w-full h-2 mb-4" aria-label="Playback progress"/>
 
            {/* Controls */}
            <div className="flex items-center justify-between gap-4">
             {/* Playback Controls */}
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => handleRewind()} aria-label="Rewind">
+            <div className="flex items-center gap-1 sm:gap-2"> {/* Reduced gap on small screens */}
+                <Button variant="ghost" size="icon" onClick={() => handleRewind()} aria-label="Rewind" className="text-foreground/80 hover:text-foreground">
                     <Rewind className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={handlePlayPause} aria-label={isPlaying ? "Pause" : "Play"}>
+                <Button variant="ghost" size="icon" onClick={handlePlayPause} aria-label={isPlaying ? "Pause" : "Play"} className="text-foreground/90 hover:text-foreground">
                     {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
                 </Button>
              </div>
 
             {/* Volume Controls */}
-            <div className="flex items-center gap-2 w-full max-w-[150px]">
-                <Button variant="ghost" size="icon" onClick={toggleMute} aria-label={isMuted ? "Unmute" : "Mute"}>
+            <div className="flex items-center gap-2 w-full max-w-[120px] sm:max-w-[150px]"> {/* Adjusted max width */}
+                <Button variant="ghost" size="icon" onClick={toggleMute} aria-label={isMuted ? "Unmute" : "Mute"} className="text-foreground/80 hover:text-foreground">
                     {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                 </Button>
                 <Slider
-                    value={[volume]} // Controlled component
+                    value={[volume]} // Ensure value is always an array
                     max={1}
                     step={0.05}
                     className="w-full cursor-pointer"
-                    onValueChange={handleVolumeChange}
+                    onValueChange={handleVolumeChange} // Use the handler
                     aria-label="Volume control"
                 />
             </div>
            </div>
         </div>
       </CardContent>
-       {/* Optional: Display script for reference - uncomment if needed */}
-       {/* <CardFooter className="max-h-40 overflow-y-auto text-sm text-muted-foreground p-4 border-t">
-            <p className="whitespace-pre-line">{script}</p>
+       {/* Optional: Display script for reference - can be useful for debugging */}
+       {/* <CardFooter className="max-h-40 overflow-y-auto text-sm text-muted-foreground p-4 border-t bg-muted/20">
+            <h3 className="font-semibold mb-2">Generated Script:</h3>
+            <p className="whitespace-pre-line text-xs">{script || "No script generated yet."}</p>
        </CardFooter> */}
     </Card>
   );
