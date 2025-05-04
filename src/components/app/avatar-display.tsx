@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image'; // Keep for potential future use, but not for the placeholder
+import Image from 'next/image'; // Keep for potential future use
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Rewind, Volume2, VolumeX } from 'lucide-react';
@@ -13,38 +13,61 @@ interface AvatarDisplayProps {
   script: string;
 }
 
-// Static SVG Placeholder Avatar
-const StaticAvatarSvg = () => (
-    <svg
-        viewBox="0 0 200 300"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full object-contain p-4 text-foreground" // Adjusted padding
-        data-ai-hint="cartoon avatar human features face illustration"
-        aria-label="Cartoon Avatar Placeholder"
-    >
-        {/* Head Outline - Made smaller and rounder */}
-        <path d="M 100, 60 C 40, 60 20, 100 20, 150 C 20, 200 40, 240 100, 240 C 160, 240 180, 200 180, 150 C 180, 100 160, 60 100, 60 Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+interface StaticAvatarSvgProps {
+    isSpeaking: boolean;
+    mouthOpen: boolean;
+}
 
-        {/* Eyes - Adjusted position */}
-        <circle cx="70" cy="140" r="12" fill="hsl(var(--background))" />
-        <circle cx="70" cy="140" r="6" fill="hsl(var(--foreground))" />
-        <circle cx="130" cy="140" r="12" fill="hsl(var(--background))" />
-        <circle cx="130" cy="140" r="6" fill="hsl(var(--foreground))" />
+// Static SVG Placeholder Avatar - Now accepts props for animation
+const StaticAvatarSvg = ({ isSpeaking, mouthOpen }: StaticAvatarSvgProps) => {
+    // Define mouth paths
+    const closedMouthPath = "M 70 180 Q 100 210 130 180"; // Smiley curve
+    const slightlyOpenMouthPath = "M 70 180 Q 100 195 130 180"; // Less curved
+    const openMouthPath = "M 65 185 C 70 205, 130 205, 135 185 Z"; // Ovalish shape
 
-        {/* Simple Nose - Adjusted position */}
-        <path d="M 100, 165 Q 105, 175 100, 185 Q 95, 175 100, 165 Z" fill="hsl(var(--foreground))" opacity="0.6"/>
-
-        {/* Mouth Placeholder - Static (kept commented out) */}
-        {/* <path d="M 80, 200 Q 100, 220 120, 200" stroke="hsl(var(--foreground))" strokeWidth="3" fill="none" /> */}
-
-        {/* Hair Placeholder (Simple) - Adjusted position */}
-        <path d="M 30, 130 Q 50, 90 100, 80 Q 150, 90 170, 130 C 160, 110 140, 100 100, 100 C 60, 100 40, 110 30, 130 Z" fill="hsl(var(--primary))" opacity="0.8" />
-
-    </svg>
-);
+    let mouthPath = closedMouthPath;
+    let mouthFill = "none";
+    let mouthStroke = "hsl(var(--foreground))";
+    let mouthStrokeWidth = "4";
 
 
-// Mock Avatar Component using the static SVG
+    if (isSpeaking) {
+        if (mouthOpen) {
+            mouthPath = openMouthPath;
+            mouthFill = "hsl(var(--foreground))"; // Fill when open
+            mouthStroke = "none";
+        } else {
+            mouthPath = slightlyOpenMouthPath; // Use slightly open or closed when speaking but "closed" phase
+             mouthFill = "none";
+             mouthStroke = "hsl(var(--foreground))";
+        }
+    }
+
+
+    return (
+        <svg
+            viewBox="0 0 200 300"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full object-contain p-4 text-foreground" // Adjusted padding
+            data-ai-hint="smiley face cartoon avatar illustration"
+            aria-label="Smiley Face Avatar Placeholder"
+        >
+            {/* Head Outline - Round */}
+            <circle cx="100" cy="150" r="90" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+
+            {/* Eyes - Simple Dots */}
+            <circle cx="75" cy="130" r="10" fill="hsl(var(--foreground))" />
+            <circle cx="125" cy="130" r="10" fill="hsl(var(--foreground))" />
+
+             {/* Mouth - Animated */}
+            <path d={mouthPath} stroke={mouthStroke} strokeWidth={mouthStrokeWidth} fill={mouthFill} strokeLinecap="round" />
+
+        </svg>
+    );
+};
+
+
+// Mock Avatar Component using the animated SVG
 const MockAvatar = React.forwardRef<HTMLDivElement, { isSpeaking: boolean }>(({ isSpeaking }, ref) => {
     const [mouthOpen, setMouthOpen] = useState(false);
 
@@ -56,7 +79,7 @@ const MockAvatar = React.forwardRef<HTMLDivElement, { isSpeaking: boolean }>(({ 
                 setMouthOpen(prev => !prev);
             }, 200); // Simulate mouth movement speed
         } else {
-             // Ensure mouth is closed when not speaking
+             // Ensure mouth is visually closed when not speaking
             setMouthOpen(false);
         }
         // Cleanup function to clear interval when component unmounts or isSpeaking changes
@@ -67,13 +90,9 @@ const MockAvatar = React.forwardRef<HTMLDivElement, { isSpeaking: boolean }>(({ 
 
     return (
         <div ref={ref} className="relative w-full h-full flex items-center justify-center bg-secondary/30 rounded-md overflow-hidden">
-             {/* Static SVG Avatar */}
-             <StaticAvatarSvg />
-            {/* Simple mouth simulation - overlaying the SVG, adjusted position */}
-            <div
-                className={`absolute bottom-[35%] left-1/2 transform -translate-x-1/2 w-8 h-1 bg-destructive rounded transition-all duration-100 ${mouthOpen ? 'h-4 scale-y-110' : 'h-1 scale-y-100'}`} // Adjusted bottom position, width, and height
-                style={{ transformOrigin: 'center bottom' }}
-            ></div>
+             {/* Animated SVG Avatar */}
+             <StaticAvatarSvg isSpeaking={isSpeaking} mouthOpen={mouthOpen} />
+             {/* Removed the separate div mouth overlay */}
         </div>
     );
 });
@@ -296,7 +315,7 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
       <CardContent className="p-0 aspect-video relative flex flex-col">
          {/* Avatar Area */}
          <div className="flex-grow relative bg-muted/30 rounded-t-lg">
-            {/* MockAvatar showing static SVG */}
+            {/* MockAvatar showing animated SVG */}
             <MockAvatar ref={avatarRef} isSpeaking={isPlaying} />
          </div>
 
@@ -342,3 +361,4 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
     </Card>
   );
 }
+
