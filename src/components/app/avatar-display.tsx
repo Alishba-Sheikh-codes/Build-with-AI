@@ -316,8 +316,10 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
 
   return (
     // Use flex column layout to make avatar take up space and controls stay at bottom
+    // Ensure the Card itself takes full height available from parent (news-feed CardContent)
     <Card className="overflow-hidden border-0 shadow-none flex flex-col h-full">
-      <CardContent className="p-0 flex flex-col flex-grow min-h-0"> {/* flex-grow allows content to fill space */}
+      {/* Make CardContent the primary flex container */}
+      <CardContent className="p-0 flex flex-col flex-grow min-h-0">
          {/* Avatar Area - Takes remaining space */}
          <div className="flex-grow relative bg-muted/30 rounded-t-lg min-h-0 flex items-center justify-center"> {/* Added flex centering */}
             {/* MockAvatar showing animated SVG - Constrained size */}
@@ -326,7 +328,7 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
              </div>
          </div>
 
-        {/* Progress Bar & Controls Wrapper - Fixed at the bottom */}
+        {/* Progress Bar & Controls Wrapper - Fixed at the bottom of CardContent */}
         <div className="p-4 rounded-b-lg bg-background border-t"> {/* Added border-t */}
            {/* Progress Bar */}
            <Progress value={progress} className="w-full h-2 mb-4" aria-label="Playback progress"/>

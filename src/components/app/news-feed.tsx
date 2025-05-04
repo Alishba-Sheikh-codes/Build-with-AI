@@ -119,10 +119,8 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
             </div>
           )}
           {!isGenerating && generatedScript && selectedArticle && (
-            // Avatar takes available space within the flex container
-             <div className="flex-grow flex flex-col min-h-0">
-                 <AvatarDisplay script={generatedScript} />
-             </div>
+            // AvatarDisplay manages its own height and layout
+            <AvatarDisplay script={generatedScript} />
           )}
           {!isGenerating && !generatedScript && selectedArticle && (
              // ScrollArea takes available space
@@ -141,4 +139,3 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     </div>
   );
 }
-
