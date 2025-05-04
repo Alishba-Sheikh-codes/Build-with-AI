@@ -58,7 +58,8 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
           <CardDescription>Select an article to generate a script.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[60vh] pr-4">
+          {/* Adjusted height for article list */}
+          <ScrollArea className="h-[calc(70vh-theme(spacing.16))] pr-4">
             <div className="space-y-4">
               {initialNews.map((article, index) => (
                 <Button
@@ -89,13 +90,14 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
             </Button>
           )}
         </CardHeader>
-        <CardContent>
+        {/* Adjusted height for content/avatar area */}
+        <CardContent className="h-[calc(70vh-theme(spacing.16))] flex flex-col p-4 md:p-6">
           {isGenerating && (
-            <div className="space-y-4 p-0">
+            <div className="space-y-4 p-0 flex flex-col flex-grow">
                {/* Skeleton for the avatar display area */}
-               <Skeleton className="aspect-video w-full rounded-t-lg" />
+               <Skeleton className="aspect-video w-full rounded-t-lg flex-grow" />
                {/* Skeleton for the controls area */}
-               <div className="p-4 space-y-3">
+               <div className="p-4 space-y-3 border-t bg-background rounded-b-lg">
                  <Skeleton className="h-2 w-full" /> {/* Progress bar */}
                  <div className="flex justify-between">
                    <div className="flex gap-2">
@@ -111,16 +113,21 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
             </div>
           )}
           {!isGenerating && generatedScript && selectedArticle && (
-            <AvatarDisplay script={generatedScript} />
+            // Avatar takes available space within the flex container
+             <div className="flex-grow flex flex-col min-h-0">
+                 <AvatarDisplay script={generatedScript} />
+             </div>
           )}
           {!isGenerating && !generatedScript && selectedArticle && (
-            <ScrollArea className="h-[60vh] pr-4">
+             // ScrollArea takes available space
+            <ScrollArea className="flex-grow pr-4 border rounded-md p-4">
               <p className="text-muted-foreground whitespace-pre-line">{selectedArticle.content}</p>
             </ScrollArea>
           )}
           {!selectedArticle && !isGenerating && (
-            <div className="flex h-[60vh] items-center justify-center text-muted-foreground">
-              <p>Select an article from the list to view its content and generate a presentation.</p>
+            // Placeholder takes available space
+            <div className="flex flex-grow items-center justify-center text-muted-foreground border rounded-md">
+              <p className="text-center p-4">Select an article from the list to view its content and generate a presentation.</p>
             </div>
           )}
         </CardContent>
@@ -128,5 +135,3 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     </div>
   );
 }
-
-    

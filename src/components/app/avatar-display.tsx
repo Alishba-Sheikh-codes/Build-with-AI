@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -89,7 +90,8 @@ const MockAvatar = React.forwardRef<HTMLDivElement, { isSpeaking: boolean }>(({ 
     }, [isSpeaking]); // Dependency array includes isSpeaking
 
     return (
-        <div ref={ref} className="relative w-full h-full flex items-center justify-center bg-secondary/30 rounded-md overflow-hidden">
+        // Removed redundant background color, parent will handle it
+        <div ref={ref} className="relative w-full h-full flex items-center justify-center rounded-md overflow-hidden">
              {/* Animated SVG Avatar */}
              <StaticAvatarSvg isSpeaking={isSpeaking} mouthOpen={mouthOpen} />
              {/* Removed the separate div mouth overlay */}
@@ -311,15 +313,16 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
 
 
   return (
-    <Card className="overflow-hidden border-0 shadow-none">
-      <CardContent className="p-0 aspect-video relative flex flex-col">
-         {/* Avatar Area */}
-         <div className="flex-grow relative bg-muted/30 rounded-t-lg">
+    // Use flex column layout to make avatar take up space and controls stay at bottom
+    <Card className="overflow-hidden border-0 shadow-none flex flex-col h-full">
+      <CardContent className="p-0 flex flex-col flex-grow min-h-0"> {/* flex-grow allows content to fill space */}
+         {/* Avatar Area - Takes remaining space */}
+         <div className="flex-grow relative bg-muted/30 rounded-t-lg min-h-0"> {/* min-h-0 is important for flex children */}
             {/* MockAvatar showing animated SVG */}
             <MockAvatar ref={avatarRef} isSpeaking={isPlaying} />
          </div>
 
-        {/* Progress Bar & Controls Wrapper */}
+        {/* Progress Bar & Controls Wrapper - Fixed at the bottom */}
         <div className="p-4 rounded-b-lg bg-background border-t"> {/* Added border-t */}
            {/* Progress Bar */}
            <Progress value={progress} className="w-full h-2 mb-4" aria-label="Playback progress"/>
@@ -361,4 +364,3 @@ export default function AvatarDisplay({ script }: AvatarDisplayProps) {
     </Card>
   );
 }
-
