@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { NewsArticle } from '@/services/news';
@@ -90,11 +91,23 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
         </CardHeader>
         <CardContent>
           {isGenerating && (
-            <div className="space-y-4">
-               <Skeleton className="h-[300px] w-[250px] rounded-md mx-auto" />
-               <Skeleton className="h-4 w-full" />
-               <Skeleton className="h-4 w-full" />
-               <Skeleton className="h-4 w-3/4" />
+            <div className="space-y-4 p-0">
+               {/* Skeleton for the avatar display area */}
+               <Skeleton className="aspect-video w-full rounded-t-lg" />
+               {/* Skeleton for the controls area */}
+               <div className="p-4 space-y-3">
+                 <Skeleton className="h-2 w-full" /> {/* Progress bar */}
+                 <div className="flex justify-between">
+                   <div className="flex gap-2">
+                     <Skeleton className="h-10 w-10 rounded-md" /> {/* Rewind */}
+                     <Skeleton className="h-10 w-10 rounded-md" /> {/* Play/Pause */}
+                   </div>
+                   <div className="flex gap-2 items-center w-full max-w-[150px]">
+                      <Skeleton className="h-10 w-10 rounded-md" /> {/* Mute */}
+                      <Skeleton className="h-2 w-full rounded-full" /> {/* Volume slider */}
+                   </div>
+                 </div>
+               </div>
             </div>
           )}
           {!isGenerating && generatedScript && selectedArticle && (
@@ -115,3 +128,5 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     </div>
   );
 }
+
+    
