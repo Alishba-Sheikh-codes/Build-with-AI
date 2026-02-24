@@ -36,8 +36,9 @@ Build-with-AI
 ┃ ┗ 📂services … Firebase & AI integrations
 ┣ 📂backend … server functions (if used)
 ┣ 📂docs … project documentation
+┣ 📂Dependencies… dependencies
 ┣ README.md … project overview
-┗ package.json … dependencies
+┗ Deployed Project
 ```
 
 ---
